@@ -925,158 +925,138 @@ if (window.location.pathname.endsWith('/index.html')) {
     forPostFn()
     GLOBAL_CONFIG_SITE.pageType !== 'shuoshuo' && btf.switchComments(document)
 
-
-// 初始化 btf 全局对象（如果不存在）
-window.btf = window.btf || {};
-
-// 添加默认的 switchComments 方法（如果未定义）
-if (typeof btf.switchComments !== 'function') {
-  btf.switchComments = function(newInstance) {
-    console.warn('[btf.switchComments] 默认实现被调用，请检查主题配置');
-    // 这里可以添加默认行为或留空
-  };
-}
-// Waline 评论系统集成（支持 PJAX）
-(function () {
-  // 从全局配置获取主题设置
-  const themeConfig = window.HEXO_THEME_CONFIG || {
-    waline: {
-      serverURL: '',
-      option: {}
-    },
-    comments: {
-      lazyload: false,
-      count: true,
-      use: []
+// 1. 全局对象初始化（放在所有脚本之前）
+window.btf = window.btf || {
+  _commentInstances: new Map(),
+  switchComments: function(action) {
+    if (action === 'destroy') {
+      this._commentInstances.forEach(instance => {
+        try {
+          instance?.destroy?.();
+        } catch (e) { /* 忽略错误 */ }
+      });
+      this._commentInstances.clear();
+    } else if (action) {
+      this._commentInstances.set(action.constructor.name, action);
     }
+  }
+};
+/**
+ * Waline 评论系统初始化（适配 Hexo + PJAX）
+ */
+(function () {
+  // 从主题配置中获取 Waline 设置
+  const themeConfig = window.HEXO_THEME_CONFIG || {};
+  const walineConfig = themeConfig.waline || {
+    serverURL: '',
+    option: {}
   };
 
-  const { waline, comments } = themeConfig;
-  const { serverURL = '', option = {} } = waline || {};
-  const { lazyload = false, count = true, use = [] } = comments || {};
-
-  // 状态标记
-  let walineInstance = null;
+  // 状态锁，防止重复初始化
   let isInitializing = false;
 
   /**
    * 销毁现有 Waline 实例
    */
-  function destroyWaline() {
-    try {
-      if (walineInstance && typeof walineInstance.destroy === 'function') {
-        walineInstance.destroy();
-        walineInstance = null;
+  function destroyWalineInstance() {
+    if (window.Waline && window.Waline.instance) {
+      try {
+        if (typeof window.Waline.instance.destroy === 'function') {
+          window.Waline.instance.destroy();
+        }
+        window.Waline.instance = null;
+      } catch (e) {
+        console.warn('[Waline] 销毁实例失败:', e);
       }
-    } catch (e) {
-      console.warn('[Waline] 销毁实例失败:', e);
     }
   }
 
   /**
-   * 初始化 Waline
-   * @param {HTMLElement} container - 评论容器
-   * @param {string} [path] - 自定义路径（用于说说等特殊页面）
+   * 初始化 Waline 评论系统
    */
-  function initWaline(container = document, path) {
-    // 防止重复初始化
-    if (walineInstance || isInitializing) return;
+  function initWaline() {
+    const container = document.getElementById('waline-wrap');
+    if (!container || isInitializing) return;
+
     isInitializing = true;
 
-    // 动态加载资源
-    const loadResources = () => {
-      return new Promise((resolve, reject) => {
-        // 加载 CSS
-        const cssUrl = '<%- url_for(theme.asset?.waline_css || "https://unpkg.com/@waline/client@v2/dist/waline.css") %>';
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = cssUrl;
-        link.onload = resolve;
-        link.onerror = () => reject(new Error('CSS 加载失败'));
-        document.head.appendChild(link);
-      }).then(() => {
-        // 加载 JS
-        return import('<%- url_for(theme.asset?.waline_js || "https://unpkg.com/@waline/client@v2/dist/waline.js") %>');
-      });
-    };
-
-    loadResources()
-      .then((module) => {
-        const Waline = module.default || module;
-        const currentPath = path || window.location.pathname;
-        
-        walineInstance = Waline.init({
-          el: '#waline-wrap',
-          serverURL: serverURL,
-          path: currentPath,
-          pageview: lazyload ? false : option.pageview ?? true,
-          dark: 'html[data-theme="dark"]',
-          comment: lazyload ? false : count,
-          ...option
-        });
-
-        // 说说页面特殊处理
-        if (window.GLOBAL_CONFIG_SITE?.pageType === 'shuoshuo') {
-          window.shuoshuoComment = {
-            destroy: destroyWaline,
-            refresh: () => {
-              destroyWaline();
-              initWaline(container, currentPath);
-            }
-          };
+    // 动态加载 Waline 资源
+    Promise.all([
+      // 加载 CSS（如果尚未加载）
+      new Promise((resolve) => {
+        if (document.querySelector('#waline-css')) {
+          resolve();
+          return;
         }
-      })
-      .catch((err) => {
-        console.error('[Waline] 初始化失败:', err);
-      })
-      .finally(() => {
-        isInitializing = false;
+        const link = document.createElement('link');
+        link.id = 'waline-css';
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/@waline/client@v2/dist/waline.css';
+        link.onload = resolve;
+        document.head.appendChild(link);
+      }),
+      // 加载 JS
+      import('https://unpkg.com/@waline/client@v2/dist/waline.js')
+    ]).then(([{ init }]) => {
+      // 先销毁旧实例
+      destroyWalineInstance();
+
+      // 初始化新实例
+      window.Waline = window.Waline || {};
+      window.Waline.instance = init({
+        el: '#waline-wrap',
+        serverURL: walineConfig.serverURL,
+        path: window.location.pathname,
+        dark: 'html[data-theme="dark"]',
+        ...walineConfig.option
       });
+    }).catch((err) => {
+      console.error('[Waline] 初始化失败:', err);
+    }).finally(() => {
+      isInitializing = false;
+    });
   }
 
-  /**
-   * PJAX 回调函数
-   */
-  function handlePjaxComplete() {
-    // 销毁旧实例
-    destroyWaline();
-    
-    // 检查是否需要初始化
-    const container = document.getElementById('waline-wrap');
-    if (container && (use.includes('Waline') || lazyload)) {
-      // 小延迟确保 DOM 完全加载
-      setTimeout(() => initWaline(document), 100);
-    }
+  // PJAX 事件处理
+  function setupPjaxHandlers() {
+    if (!window.pjax) return;
+
+    // PJAX 发送前销毁实例
+    document.addEventListener('pjax:send', destroyWalineInstance);
+
+    // PJAX 完成后重新初始化
+    document.addEventListener('pjax:complete', () => {
+      setTimeout(initWaline, 100); // 延迟确保 DOM 就绪
+    });
   }
 
-  // 主逻辑
-  if (document.getElementById('waline-wrap')) {
-    // 普通页面初始化
-    if (use.includes('Waline') || lazyload) {
+  // 初始化入口
+  function main() {
+    // 只有存在评论容器时才初始化
+    if (document.getElementById('waline-wrap')) {
+      // 设置 PJAX 事件监听
+      setupPjaxHandlers();
+      
+      // 首次加载初始化
       if (window.pjax) {
-        // PJAX 环境：监听事件
-        document.addEventListener('pjax:complete', handlePjaxComplete);
-        // 首次加载
-        setTimeout(() => initWaline(document), 100);
+        // PJAX 模式：等待 DOM 就绪
+        document.addEventListener('pjax:end', initWaline);
       } else {
-        // 非 PJAX 环境：直接初始化
-        initWaline(document);
+        // 传统模式：直接初始化
+        initWaline();
       }
     }
   }
 
-  // 暴露全局方法（用于手动控制）
+  // 执行主函数
+  main();
+
+  // 暴露全局方法（可选）
   window.WalineManager = {
-    destroy: destroyWaline,
-    refresh: () => {
-      destroyWaline();
-      initWaline(document);
-    }
+    refresh: initWaline,
+    destroy: destroyWalineInstance
   };
 })();
-
-
-
 
 
 
