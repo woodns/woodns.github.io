@@ -921,18 +921,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     forPostFn()
     GLOBAL_CONFIG_SITE.pageType !== 'shuoshuo' && btf.switchComments(document)
-
-
-
-
-
-
-
-
-
-
-
-    openMobileMenu()
+ openMobileMenu()
   }
 
   btf.addGlobalFn('pjaxComplete', refreshFn, 'refreshFn')
