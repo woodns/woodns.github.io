@@ -355,7 +355,7 @@
     if (e.request.status === 404) {
       const usePjax = true
       true
-        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        ? (usePjax ? pjax.loadUrl('/404') : window.location.href = '/404')
         : window.location.href = e.request.responseURL
     }
   })
