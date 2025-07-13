@@ -1,10 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   let headerContentWidth, $nav
   let mobileSidebarOpen = false
-// 在 index.html 中
-if (window.location.pathname.endsWith('/index.html')) {
-  history.replaceState({}, '', window.location.pathname.replace('/index.html', '/'));
-}
+
   const adjustMenu = init => {
     const getAllWidth = ele => Array.from(ele).reduce((width, i) => width + i.offsetWidth, 0)
 
@@ -127,16 +124,7 @@ if (window.location.pathname.endsWith('/index.html')) {
 
     const expandCode = e => e.currentTarget.classList.toggle('expand-done')
 
-   
-
-
-
-
-
-
-
-
- // 獲取隱藏狀態下元素的真實高度
+    // 獲取隱藏狀態下元素的真實高度
     const getActualHeight = item => {
       const hiddenElements = new Map()
 
@@ -908,7 +896,7 @@ if (window.location.pathname.endsWith('/index.html')) {
   const refreshFn = () => {
     initAdjust()
     justifiedIndexPostUI()
-    
+
     if (GLOBAL_CONFIG_SITE.pageType === 'post') {
       addPostOutdateNotice()
       GLOBAL_CONFIG.relativeDate.post && relativeDate(document.querySelectorAll('#post-meta time'))
@@ -923,9 +911,8 @@ if (window.location.pathname.endsWith('/index.html')) {
     scrollFn()
 
     forPostFn()
-    GLOBAL_CONFIG_SITE.pageType !== 'shuoshuo' && btf.switchComments(document
-
-  openMobileMenu()
+    GLOBAL_CONFIG_SITE.pageType !== 'shuoshuo' && btf.switchComments(document)
+    openMobileMenu()
   }
 
   btf.addGlobalFn('pjaxComplete', refreshFn, 'refreshFn')
