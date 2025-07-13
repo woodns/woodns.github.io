@@ -937,6 +937,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const destroyWaline = (ele) => ele?.destroy();
 
   const initWaline = (Fn, el = document, path = window.location.pathname) => {
+    // 标准化路径：移除 `index.html` 和末尾的 `/`
+    const normalizedPath = path.replace(/index\.html$/, '').replace(/\/$/, '') || '/';
+    
     const walineInstance = Fn({
       el: el.querySelector('#waline-wrap'),
       serverURL: waline.serverURL,
@@ -944,7 +947,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dark: 'html[data-theme="dark"]',
       comment: comments.lazyload ? false : comments.count,
       ...option,
-      path: isShuoshuo ? path : option.path || path,
+      path: isShuoshuo ? normalizedPath : (option.path || normalizedPath),
     });
 
     if (isShuoshuo) {
