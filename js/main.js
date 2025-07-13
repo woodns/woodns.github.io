@@ -1,7 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
   let headerContentWidth, $nav
   let mobileSidebarOpen = false
-
+// 在 index.html 中
+if (window.location.pathname.endsWith('/index.html')) {
+  history.replaceState({}, '', window.location.pathname.replace('/index.html', '/'));
+}
   const adjustMenu = init => {
     const getAllWidth = ele => Array.from(ele).reduce((width, i) => width + i.offsetWidth, 0)
 
