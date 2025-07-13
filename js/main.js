@@ -921,6 +921,80 @@ document.addEventListener('DOMContentLoaded', () => {
 
     forPostFn()
     GLOBAL_CONFIG_SITE.pageType !== 'shuoshuo' && btf.switchComments(document)
+document.addEventListener('DOMContentLoaded', () => {
+  const config = window.__HEXO_CONFIG__ || {};
+  const { waline, comments, site } = config;
+
+  if (!waline || !waline.serverURL) {
+    console.error('Waline serverURL is not configured!');
+    return;
+  }
+
+  let initFn = window.walineFn || null;
+  const isShuoshuo = site.isShuoshuo;
+  const option = waline.option || {};
+
+  const destroyWaline = (ele) => ele?.destroy();
+
+  const initWaline = (Fn, el = document, path = window.location.pathname) => {
+    const walineInstance = Fn({
+      el: el.querySelector('#waline-wrap'),
+      serverURL: waline.serverURL,
+      pageview: comments.lazyload ? false : waline.pageview,
+      dark: 'html[data-theme="dark"]',
+      comment: comments.lazyload ? false : comments.count,
+      ...option,
+      path: isShuoshuo ? path : option.path || path,
+    });
+
+    if (isShuoshuo) {
+      window.shuoshuoComment = {
+        destroyWaline: () => {
+          destroyWaline(walineInstance);
+          if (el.children.length) {
+            el.innerHTML = '';
+            el.classList.add('no-comment');
+          }
+        },
+      };
+    }
+  };
+
+  const loadWaline = (el, path) => {
+    if (initFn) {
+      initWaline(initFn, el, path);
+    } else {
+      Promise.all([
+        btf.getCSS('!{url_for(theme.asset.waline_css)}'),
+        import('!{url_for(theme.asset.waline_js)}'),
+      ]).then(([_, { init }]) => {
+        initFn = init || Waline.init;
+        initWaline(initFn, el, path);
+        window.walineFn = initFn;
+      });
+    }
+  };
+
+  if (isShuoshuo) {
+    if (comments.use[0] === 'Waline') {
+      window.shuoshuoComment = { loadComment: loadWaline };
+    } else {
+      window.loadOtherComment = loadWaline;
+    }
+    return;
+  }
+
+  if (comments.use[0] === 'Waline' || comments.lazyload) {
+    if (comments.lazyload) {
+      btf.loadComment(document.getElementById('waline-wrap'), loadWaline);
+    } else {
+      setTimeout(loadWaline, 0);
+    }
+  } else {
+    window.loadOtherComment = loadWaline;
+  }
+});
+
  openMobileMenu()
   }
 
