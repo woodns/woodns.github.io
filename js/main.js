@@ -124,7 +124,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const expandCode = e => e.currentTarget.classList.toggle('expand-done')
 
-    // 獲取隱藏狀態下元素的真實高度
+   
+
+
+
+
+
+
+
+
+ // 獲取隱藏狀態下元素的真實高度
     const getActualHeight = item => {
       const hiddenElements = new Map()
 
@@ -896,7 +905,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const refreshFn = () => {
     initAdjust()
     justifiedIndexPostUI()
-
+    
     if (GLOBAL_CONFIG_SITE.pageType === 'post') {
       addPostOutdateNotice()
       GLOBAL_CONFIG.relativeDate.post && relativeDate(document.querySelectorAll('#post-meta time'))
@@ -912,6 +921,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     forPostFn()
     GLOBAL_CONFIG_SITE.pageType !== 'shuoshuo' && btf.switchComments(document)
+
+
+
+
+
+
+
+
+
+
+
     openMobileMenu()
   }
 
