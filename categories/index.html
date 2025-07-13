@@ -243,30 +243,58 @@
     btf.addGlobalFn('pjaxComplete', () => newestComments.newestCommentInit(name, getComment), name)
   }
 }</script><script>window.addEventListener('load', () => {
-  const keyName = 'waline-newest-comments'
+  const keyName = 'github-newest-comments'
   const { changeContent, generateHtml, run } = window.newestComments
 
-  const getComment = async (ele) => {
-    try {
-      const res = await fetch('https://creative-shortbread-38e5d8.netlify.app/.netlify/functions/comment/api/comment?type=recent&count=6')
-      const result = await res.json()
-      const walineArray = result.data.map(e => {
-        return {
-          'content': changeContent(e.comment),
-          'avatar': e.avatar,
-          'nick': e.nick,
-          'url': e.url + '#' + e.objectId,
-          'date': e.time || e.insertedAt
+  const findTrueUrl = (array, ele) => {
+    Promise.all(array.map(item =>
+      fetch(item.url).then(resp => resp.json()).then(data => {
+        let urlArray = data.body ? data.body.match(/(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?/ig) : []
+        if (!Array.isArray(urlArray) || urlArray.length === 0) {
+          urlArray = [`${data.html_url}`]
+        }
+        if (data.user.login === 'utterances-bot') {
+          return urlArray.pop()
+        } else {
+          return urlArray.shift()
         }
       })
-      btf.saveToLocal.set(keyName, JSON.stringify(walineArray), 10/(60*24))
-      generateHtml(walineArray, ele)
-    } catch (err) {
-      console.error(err)
-      ele.textContent= "无法获取评论，请确认相关配置是否正确"
-    }
+    )).then(res => {
+        array = array.map((i,index)=> {
+          return {
+            ...i,
+            url: res[index]
+          }
+        })
+
+        btf.saveToLocal.set(keyName, JSON.stringify(array), 10/(60*24))
+        generateHtml(array, ele)
+    });
   }
 
+  const getComment = ele => {
+    fetch('https://api.github.com/repos/rootoy/rootoy.github.io/issues/comments?sort=updated&direction=desc&per_page=6&page=1',{
+      "headers": {
+        Accept: 'application/vnd.github.v3.html+json'
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        const githubArray = data.map(item => {
+          return {
+            'avatar': item.user.avatar_url,
+            'content': changeContent(item.body_html || item.body),
+            'nick': item.user.login,
+            'url': item.issue_url,
+            'date': item.updated_at
+          }
+        })
+        findTrueUrl(githubArray, ele)
+      }).catch(e => {
+        console.error(e)
+        ele.textContent= "无法获取评论，请确认相关配置是否正确"
+      })
+  }
   run(keyName, getComment)
 })</script><script>(() => {
   btf.getScript('//code.tidio.co/ftmddwecbjcgt1oogkssvti6xdrs3bgc.js').then(() => {
