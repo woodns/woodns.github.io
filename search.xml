@@ -2,7 +2,7 @@
 <search>
   <entry>
     <title>Hello World</title>
-    <url>/2025/07/15/hello-world/</url>
+    <url>/posts/hello-world.html</url>
     <content><![CDATA[Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
 Quick StartCreate a new post$ hexo new &quot;My New Post&quot;
 
@@ -20,7 +20,7 @@ More info: Deployment
   </entry>
   <entry>
     <title>深度学习的神经网络算法分析与设计</title>
-    <url>/2025/07/27/sdxx/</url>
+    <url>/posts/sdxx.html</url>
     <content><![CDATA[深度学习作为人工智能领域的核心技术，其核心驱动力源于神经网络算法的不断迭代与创新。神经网络以模拟人脑神经元连接方式为灵感，通过多层非线性变换实现对复杂数据的特征学习与模式拟合。本文将从算法原理、关键设计要素及典型应用场景三个维度，对神经网络算法进行系统分析。
 一、神经网络算法的核心原理
 神经网络算法的本质是通过多层非线性映射实现从输入到输出的精准拟合，其核心原理可概括为层级特征提取与误差反向传播两大支柱。
@@ -82,7 +82,7 @@ Sigmoid&#x2F;Softmax：适用于二分类或多分类任务的输出层，将输
   </entry>
   <entry>
     <title>优化思想：在权衡中寻找平衡的智慧</title>
-    <url>/2025/07/27/yh/</url>
+    <url>/posts/yh.html</url>
     <content><![CDATA[从“田忌赛马”的策略博弈到现代企业的资源调配，从个人时间管理到人工智能的算法迭代，优化思想始终贯穿于人类实践的各个维度。它并非简单的“追求极致”，而是在有限条件下，通过理性分析与动态调整，实现目标与成本、效率与公平、短期收益与长期价值的平衡。这种智慧，既是解决问题的方法论，更是一种审视世界的思维方式。
 优化的本质：在约束中寻找最优解
 优化的核心命题，永远始于“约束”。资源的有限性、目标的多元性、环境的不确定性，构成了优化问题的基本前提。古人云“巧妇难为无米之炊”，正是对约束条件的生动注解——即便是最精妙的优化方案，也必须立足现实边界。
@@ -111,7 +111,7 @@ Sigmoid&#x2F;Softmax：适用于二分类或多分类任务的输出层，将输
   </entry>
   <entry>
     <title>古法养鱼：水活鱼欢里的东方智慧</title>
-    <url>/2025/07/27/yy/</url>
+    <url>/posts/yy.html</url>
     <content><![CDATA[ 在玻璃鱼缸与智能过滤系统普及的今天，古法养鱼如同一股清流，承载着古人“天人合一”的生活哲学。它不依赖精密设备，仅凭对水、鱼、草、器的微妙调和，便能让一缸活水生机盎然，堪称中式生活美学的微观缩影。
 一、“水为魂”：养水是古法的根基
 古法养鱼的核心，在于“养水”而非“养鱼”。古人深谙“流水不腐”的道理，却更讲究“静水活养”的智慧。
